@@ -1,0 +1,93 @@
+openapi: 3.0.3
+info:
+  title: Movie Theater Seat Hold API
+  version: 1.0.0
+  description: >
+    This API allows customers to temporarily reserve seats for a selected movie showtime, review their seat hold,
+    and cancel it if they decide not to purchase tickets. Seat holds expire after a limited time so that seats
+    can become available to other customers.
+
+paths:
+  /seat-holds/{holdId}:
+    get:
+      summary: Get seat hold details
+      parameters:
+        - name: holdId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Seat hold found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  seatIds:
+                    type: array
+                    items:
+                      type: string
+                  status:
+                    type: string
+                  total:
+                    type: number
+                  expiresAt:
+                    type: string
+                    format: date-time
+        '404':
+          description: Seat hold not found
+
+    delete:
+      summary: Cancel a seat hold
+      parameters:
+        - name: holdId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Seat hold canceled successfully
+        '404':
+          description: Seat hold not found
+        '409':
+          description: Seat hold has already been used for a purchase
+
+  /seat-holds:
+    post:
+      summary: Create a seat hold
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - showtimeId
+                - seatIds
+              properties:
+                showtimeId:
+                  type: string
+                seatIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Seat hold created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  holdId:
+                    type: string
+                  expiresAt:
+                    type: string
+                    format: date-time
+                  total:
+                    type: number
+        '409':
+          description: One or more selected seats are unavailable
